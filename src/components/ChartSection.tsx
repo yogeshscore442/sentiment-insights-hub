@@ -1,254 +1,38 @@
 import { useMemo } from 'react';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BarChart, Bar, Cell, CartesianGrid, LineChart, Line, PieChart, Pie, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { MessageSquare, Smile, Frown, Minus, Star, ChartNoAxesCombined, ChartPie, WholeWord } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockSentimentStats, mockTrendData, mockWordFrequency } from '@/data/mockData';
 import type { SentimentStats, TrendData, WordFrequency } from '@/services/api';
-
-interface ChartSectionProps {
-  sentimentStats?: SentimentStats;
-  trendData?: TrendData[];
-  wordFrequency?: WordFrequency[];
-}
-
-const COLORS = {
-  positive: 'hsl(142, 76%, 36%)',
-  negative: 'hsl(0, 84%, 60%)',
-  neutral: 'hsl(38, 92%, 50%)',
+interface ChartSectionProps { sentimentStats?: SentimentStats; trendData?: TrendData[]; wordFrequency?: WordFrequency[]; }
+const COLORS = { positive: 'hsl(var(--chart-2))', negative: 'hsl(var(--chart-3))', neutral: 'hsl(var(--chart-4))' };
+const GRID = 'hsl(var(--border))';
+const percent = (part: number, total: number) => total ? `${(part / total * 100).toFixed(1)}%` : '0%';
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ name?: string; value?: number; color?: string }>; label?: string }) => active && payload?.length ? <div className="bg-popover border border-border rounded-md shadow-sm px-3 py-2"><p className="text-xs font-semibold mb-1">{label}</p>{payload.map((entry, i) => <p key={i} className="text-xs text-muted-foreground leading-5">{entry.name}: <strong className="text-foreground font-medium">{entry.value?.toLocaleString()}</strong></p>)}</div> : null;
+const ChartSection = ({ sentimentStats = mockSentimentStats, trendData = mockTrendData, wordFrequency = mockWordFrequency }: ChartSectionProps) => {
+ const pieData = useMemo(() => [
+  { name: 'Positive', value: sentimentStats.positive, color: COLORS.positive },
+  { name: 'Negative', value: sentimentStats.negative, color: COLORS.negative },
+  { name: 'Neutral', value: sentimentStats.neutral, color: COLORS.neutral },
+ ], [sentimentStats]);
+ const metrics = [
+  { label: 'Positive reviews', value: sentimentStats.positive.toLocaleString(), note: `${percent(sentimentStats.positive, sentimentStats.total)} of all reviews`, icon: Smile, key: 'positive', color: COLORS.positive, className: 'text-positive' },
+  { label: 'Negative reviews', value: sentimentStats.negative.toLocaleString(), note: `${percent(sentimentStats.negative, sentimentStats.total)} of all reviews`, icon: Frown, key: 'negative', color: COLORS.negative, className: 'text-negative' },
+  { label: 'Neutral reviews', value: sentimentStats.neutral.toLocaleString(), note: `${percent(sentimentStats.neutral, sentimentStats.total)} of all reviews`, icon: Minus, key: 'neutral', color: COLORS.neutral, className: 'text-neutral' },
+  { label: 'Average rating', value: sentimentStats.averageRating.toFixed(1), note: 'Out of 5 stars', icon: Star, key: null, color: 'hsl(var(--primary))', className: 'text-primary' },
+ ];
+ const Legend = () => <div className="chart-legend">{pieData.map(item => <span key={item.name}><span className="legend-dot" style={{ background: item.color }} />{item.name}</span>)}</div>;
+ const TrendChart = ({ height = 280 }: { height?: number }) => <div style={{ height }} aria-label="Sentiment trends over time"><ResponsiveContainer width="100%" height="100%"><LineChart data={trendData} margin={{ top: 12, left: -20, right: 12, bottom: 0 }}><CartesianGrid strokeDasharray="3 4" stroke={GRID} vertical={false} /><XAxis dataKey="date" axisLine={false} tickLine={false} minTickGap={30} tickMargin={10} tickFormatter={value => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} /><YAxis axisLine={false} tickLine={false} tickMargin={8} /><Tooltip content={<CustomTooltip />} />{(['positive', 'negative', 'neutral'] as const).map(key => <Line key={key} type="monotone" dataKey={key} stroke={COLORS[key]} strokeWidth={2.5} dot={false} name={key.charAt(0).toUpperCase() + key.slice(1)} />)}</LineChart></ResponsiveContainer></div>;
+ return <div className="space-y-5">
+  <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">{metrics.map(({ label, value, note, icon: Icon, key, color, className }) => <div className="metric-card" key={label}><div className="metric-label"><Icon size={15} className={className} />{label}</div><div className="metric-value">{value}{!key && <span className="text-muted-foreground text-base font-normal ml-1">/ 5</span>}</div><div className="metric-foot"><span>{note}</span>{key ? <div className="metric-spark" aria-hidden="true"><ResponsiveContainer width="100%" height="100%"><LineChart data={trendData}><Line dataKey={key} type="monotone" stroke={color} strokeWidth={1.5} dot={false} isAnimationActive={false} /></LineChart></ResponsiveContainer></div> : <div className="flex gap-0.5 text-neutral" aria-hidden="true">{[0,1,2,3,4].map(i => <Star key={i} size={11} className={i < Math.round(sentimentStats.averageRating) ? 'fill-current' : ''} />)}</div>}</div></div>)}</div>
+  <Tabs defaultValue="distribution" className="space-y-5"><TabsList className="analytics-tabs"><TabsTrigger className="analytics-tab gap-2" value="distribution"><ChartPie size={14} />Distribution</TabsTrigger><TabsTrigger className="analytics-tab gap-2" value="trends"><ChartNoAxesCombined size={14} />Trends</TabsTrigger><TabsTrigger className="analytics-tab gap-2" value="words"><WholeWord size={14} />Word frequency</TabsTrigger></TabsList>
+   <TabsContent value="distribution" className="mt-0"><div className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.65fr)] gap-4">
+    <section className="chart-panel"><div className="chart-heading"><div><h3>Sentiment breakdown</h3><p className="chart-subtitle">The overall customer perspective</p></div><ChartPie size={16} className="text-muted-foreground" /></div><div className="relative h-[215px]" aria-label={`Sentiment distribution: ${pieData.map(item => `${item.name} ${item.value}`).join(', ')}`}><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={pieData} cx="50%" cy="48%" innerRadius={72} outerRadius={92} paddingAngle={3} stroke="none" dataKey="value">{pieData.map(item => <Cell key={item.name} fill={item.color} />)}</Pie><Tooltip content={<CustomTooltip />} /></PieChart></ResponsiveContainer><div className="donut-center"><strong>{sentimentStats.total.toLocaleString()}</strong><span>Total reviews</span></div></div><div className="distribution-list">{pieData.map(item => <div className="distribution-item" key={item.name}><span><span className="legend-dot" style={{ background: item.color }} />{item.name}</span><div className="flex items-center gap-4"><span className="text-muted-foreground">{item.value.toLocaleString()}</span><strong className="w-11 text-right">{percent(item.value, sentimentStats.total)}</strong></div></div>)}</div></section>
+    <section className="chart-panel"><div className="chart-heading"><div><h3>Sentiment over time</h3><p className="chart-subtitle">Daily review volume · Sample period</p></div><span className="demo-badge hidden sm:inline-flex">Jan 1 – 14, 2024</span></div><Legend /><TrendChart height={210} /><div className="border-t border-border pt-4 mt-2"><div className="flex justify-between items-center"><h3 className="!text-xs">Sentiment comparison</h3><span className="text-[10px] text-muted-foreground">Review count</span></div><div className="h-[80px] mt-2" aria-label="Sentiment comparison by review count"><ResponsiveContainer width="100%" height="100%"><BarChart data={pieData} layout="vertical" margin={{ left: 0, right: 12, top: 0, bottom: 0 }}><XAxis type="number" hide /><YAxis dataKey="name" type="category" width={60} axisLine={false} tickLine={false} /><Tooltip content={<CustomTooltip />} /><Bar dataKey="value" name="Reviews" barSize={7} radius={[0,3,3,0]}>{pieData.map(item => <Cell key={item.name} fill={item.color} />)}</Bar></BarChart></ResponsiveContainer></div></div></section>
+   </div></TabsContent>
+   <TabsContent value="trends"><section className="chart-panel"><div className="chart-heading"><div><h3>Sentiment trends over time</h3><p className="chart-subtitle">How customer opinions change from day to day</p></div><Legend /></div><TrendChart height={340} /></section></TabsContent>
+   <TabsContent value="words"><section className="chart-panel"><div className="chart-heading"><div><h3>The words that come up most</h3><p className="chart-subtitle">Most frequent terms across product reviews</p></div><WholeWord size={18} className="text-primary" /></div><div className="h-[360px]" aria-label="Most frequent review words"><ResponsiveContainer width="100%" height="100%"><BarChart data={wordFrequency.slice(0,10)} layout="vertical" margin={{ left: 0, right: 24 }}><CartesianGrid strokeDasharray="3 4" stroke={GRID} horizontal={false} /><XAxis type="number" axisLine={false} tickLine={false} /><YAxis dataKey="word" type="category" width={90} axisLine={false} tickLine={false} /><Tooltip content={<CustomTooltip />} /><Bar dataKey="count" fill="hsl(var(--primary))" radius={[0,3,3,0]} barSize={12} name="Mentions" /></BarChart></ResponsiveContainer></div></section></TabsContent>
+  </Tabs>
+ </div>;
 };
-
-const ChartSection = ({
-  sentimentStats = mockSentimentStats,
-  trendData = mockTrendData,
-  wordFrequency = mockWordFrequency,
-}: ChartSectionProps) => {
-  const pieData = useMemo(() => [
-    { name: 'Positive', value: sentimentStats.positive, color: COLORS.positive },
-    { name: 'Negative', value: sentimentStats.negative, color: COLORS.negative },
-    { name: 'Neutral', value: sentimentStats.neutral, color: COLORS.neutral },
-  ], [sentimentStats]);
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
-          <p className="font-medium text-sm mb-1">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-xs" style={{ color: entry.color }}>
-              {entry.name}: {entry.value}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-positive-muted border-positive/20">
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-positive">
-              {sentimentStats.positive.toLocaleString()}
-            </div>
-            <p className="text-sm text-positive/80">Positive Reviews</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-negative-muted border-negative/20">
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-negative">
-              {sentimentStats.negative.toLocaleString()}
-            </div>
-            <p className="text-sm text-negative/80">Negative Reviews</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-neutral-muted border-neutral/20">
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-neutral">
-              {sentimentStats.neutral.toLocaleString()}
-            </div>
-            <p className="text-sm text-neutral/80">Neutral Reviews</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-primary">
-              {sentimentStats.averageRating.toFixed(1)} ★
-            </div>
-            <p className="text-sm text-muted-foreground">Average Rating</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts */}
-      <Tabs defaultValue="distribution" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 max-w-md">
-          <TabsTrigger value="distribution">Distribution</TabsTrigger>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
-          <TabsTrigger value="words">Word Cloud</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="distribution" className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Pie Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Sentiment Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={4}
-                        dataKey="value"
-                      >
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Bar Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Sentiment Comparison</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={pieData} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                      <XAxis type="number" />
-                      <YAxis dataKey="name" type="category" width={80} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="trends">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Sentiment Trends Over Time</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={trendData}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(value) =>
-                        new Date(value).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                        })
-                      }
-                    />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="positive"
-                      stroke={COLORS.positive}
-                      strokeWidth={2}
-                      dot={false}
-                      name="Positive"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="negative"
-                      stroke={COLORS.negative}
-                      strokeWidth={2}
-                      dot={false}
-                      name="Negative"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="neutral"
-                      stroke={COLORS.neutral}
-                      strokeWidth={2}
-                      dot={false}
-                      name="Neutral"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="words">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Most Frequent Words</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={wordFrequency.slice(0, 10)} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                    <XAxis type="number" />
-                    <YAxis
-                      dataKey="word"
-                      type="category"
-                      width={100}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar
-                      dataKey="count"
-                      fill="hsl(217, 91%, 60%)"
-                      radius={[0, 4, 4, 0]}
-                      name="Mentions"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-};
-
 export default ChartSection;
