@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,15 +11,17 @@ import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  const [collapsed, setCollapsed] = useState(false);
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-1">
+        <div className={`workspace-shell ${collapsed ? "sidebar-collapsed" : ""}`}>
+          <Navbar collapsed={collapsed} onCollapse={() => setCollapsed(value => !value)} />
+          <main id="main-content" className="workspace-main">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/dashboard" element={<Dashboard />} />
@@ -29,6 +32,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

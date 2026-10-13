@@ -43,22 +43,23 @@ const techStack = {
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-muted/20">
-      <div className="container mx-auto px-4 py-12">
+    <div className="about-page">
+      <div className="page-container">
         {/* Header */}
-        <div className="max-w-3xl mx-auto text-center mb-12">
-          <Badge className="mb-4 gradient-hero border-0">Academic Project</Badge>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
+        <div className="page-heading block mb-10">
+          <Badge className="mb-4 demo-badge">Academic Project</Badge>
+          <h1 className="mb-3">
             Product Sentiment Analyzer
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             A comprehensive review analysis platform that leverages Natural Language Processing
             to extract actionable insights from e-commerce product reviews.
           </p>
         </div>
 
+        <div className="demo-disclosure mb-8">This workspace currently displays sample data. The stack below describes the intended system; live scraping and NLP services are not connected.</div>
         {/* Project Overview */}
-        <Card className="mb-8 max-w-4xl mx-auto">
+        <Card className="mb-8 w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-primary" />
@@ -67,14 +68,14 @@ const About = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              This project is designed to help users understand customer sentiment for products
+              This demo project is designed to help users understand customer sentiment for products
               sold on major Indian e-commerce platforms - Amazon and Flipkart. By aggregating
               and analyzing thousands of reviews, we provide:
             </p>
             <ul className="space-y-2 text-muted-foreground">
               <li className="flex items-start gap-2">
                 <span className="text-positive font-bold">•</span>
-                <span>Real-time sentiment classification (positive, negative, neutral)</span>
+                <span>Sentiment classification (positive, negative, neutral)</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary font-bold">•</span>
@@ -93,7 +94,7 @@ const About = () => {
         </Card>
 
         {/* Tech Stack */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
+        <div className="grid md:grid-cols-2 gap-6 w-full mb-8">
           {/* Frontend */}
           <Card>
             <CardHeader>
@@ -172,7 +173,7 @@ const About = () => {
         </div>
 
         {/* Architecture */}
-        <Card className="mb-8 max-w-4xl mx-auto">
+        <Card className="mb-8 w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Code2 className="h-5 w-5 text-primary" />
@@ -211,7 +212,7 @@ const About = () => {
         </Card>
 
         {/* Contact */}
-        <Card className="max-w-4xl mx-auto">
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Contact & Links</CardTitle>
           </CardHeader>
@@ -246,12 +247,12 @@ const About = () => {
           </CardContent>
         </Card>
 
-        <Separator className="my-12 max-w-4xl mx-auto" />
+        <Separator className="my-12 w-full" />
 
         {/* Footer */}
         <div className="text-center text-sm text-muted-foreground">
           <p>© 2024 Product Sentiment Analyzer. Final Year Project.</p>
-          <p className="mt-1">Built with React, TypeScript, and ❤️</p>
+          <p className="mt-1">Built with React and TypeScript</p>
         </div>
       </div>
     </div>

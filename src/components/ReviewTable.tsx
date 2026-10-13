@@ -115,12 +115,12 @@ const ReviewTable = ({ reviews = mockReviews }: ReviewTableProps) => {
   };
 
   return (
-    <Card>
+    <Card className="review-panel">
       <CardHeader className="pb-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Reviews ({filteredAndSortedReviews.length})
+            <span className="text-sm font-semibold">Customer reviews</span><span className="demo-badge">{filteredAndSortedReviews.length}</span>
+
           </CardTitle>
           
           <div className="flex flex-col sm:flex-row gap-3">
@@ -128,6 +128,7 @@ const ReviewTable = ({ reviews = mockReviews }: ReviewTableProps) => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                aria-label="Search reviews"
                 placeholder="Search reviews..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -137,7 +138,7 @@ const ReviewTable = ({ reviews = mockReviews }: ReviewTableProps) => {
 
             {/* Sentiment Filter */}
             <Select value={sentimentFilter} onValueChange={setSentimentFilter}>
-              <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectTrigger aria-label="Filter by sentiment" className="w-full sm:w-[140px]">
                 <SelectValue placeholder="Sentiment" />
               </SelectTrigger>
               <SelectContent>
@@ -150,7 +151,7 @@ const ReviewTable = ({ reviews = mockReviews }: ReviewTableProps) => {
 
             {/* Platform Filter */}
             <Select value={platformFilter} onValueChange={setPlatformFilter}>
-              <SelectTrigger className="w-full sm:w-[130px]">
+              <SelectTrigger aria-label="Filter by platform" className="w-full sm:w-[130px]">
                 <SelectValue placeholder="Platform" />
               </SelectTrigger>
               <SelectContent>
@@ -164,13 +165,13 @@ const ReviewTable = ({ reviews = mockReviews }: ReviewTableProps) => {
       </CardHeader>
 
       <CardContent>
-        <div className="rounded-lg border overflow-hidden">
+        <div className="border-t overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="w-[250px]">Review</TableHead>
-                  <TableHead>
+                  <TableHead className="w-[360px]">Review</TableHead>
+                  <TableHead aria-sort={sortField === 'rating' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -235,22 +236,20 @@ const ReviewTable = ({ reviews = mockReviews }: ReviewTableProps) => {
                           <p className="text-xs text-muted-foreground line-clamp-2">
                             {review.content}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            by {review.reviewerName}
-                          </p>
+                          <div className="review-author pt-1"><span className="review-avatar">{review.reviewerName.split(" ").map(part => part[0]).join("")}</span><span className="text-xs text-muted-foreground">{review.reviewerName}</span></div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-0.5">
+                        <div className="flex items-center gap-0.5" aria-label={`${review.rating} out of 5 stars`}>
                           {getRatingStars(review.rating)}
                         </div>
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={cn('capitalize', getSentimentBadge(review.sentiment))}
+                          className={cn('capitalize gap-1.5 font-medium border-transparent', getSentimentBadge(review.sentiment))}
                         >
-                          {review.sentiment}
+                          <span className="h-1 w-1 rounded-full bg-current" />{review.sentiment}
                         </Badge>
                       </TableCell>
                       <TableCell>
