@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { RefreshCw, Download, Calendar } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { RefreshCw, Download, Calendar, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -48,17 +48,18 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/20">
-      <div className="container mx-auto px-4 py-8">
+    <div className="dashboard-page">
+      <div className="page-container">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+        <div className="page-heading">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              Analytics Dashboard
+            <div className="eyebrow"><span className="tiny-square" /> CUSTOMER INTELLIGENCE</div>
+            <h1>
+              Review analytics
             </h1>
             <p className="text-muted-foreground">
               {selectedProduct
-                ? `Analyzing: ${selectedProduct.name}`
+                ? `A closer look at your product’s customer feedback.`
                 : 'Search for a product to view analytics'}
             </p>
           </div>
@@ -98,21 +99,16 @@ const Dashboard = () => {
         </div>
 
         {/* Search Section */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-base">Search Products</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <SearchBox onProductSelect={handleProductSelect} />
-          </CardContent>
-        </Card>
+        <section className="dashboard-search mb-6">
+          <SearchBox onProductSelect={handleProductSelect} compact />
+        </section>
 
         {/* Selected Product Info */}
         {selectedProduct && (
-          <Card className="mb-8 border-primary/30 animate-scale-in">
+          <Card className="selected-product mb-6">
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                <div className="h-14 w-14 rounded-md overflow-hidden bg-muted flex-shrink-0">
                   <img
                     src={selectedProduct.image}
                     alt={selectedProduct.name}
@@ -120,8 +116,8 @@ const Dashboard = () => {
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold line-clamp-1">{selectedProduct.name}</h3>
-                  <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                  <div className="text-xs text-muted-foreground mb-1">SELECTED PRODUCT</div><h3 className="font-semibold text-sm line-clamp-2">{selectedProduct.name}</h3>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-muted-foreground">
                     <span className="capitalize">{selectedProduct.platform}</span>
                     <span>•</span>
                     <span>{selectedProduct.price}</span>
@@ -131,18 +127,20 @@ const Dashboard = () => {
                     <span>{selectedProduct.reviewCount.toLocaleString()} reviews</span>
                   </div>
                 </div>
+                <span className="demo-badge hidden sm:inline-flex">Sample data</span>
               </div>
             </CardContent>
           </Card>
         )}
 
         {/* Charts */}
-        <div className="mb-8">
+        <div className="mb-6">
           <ChartSection />
         </div>
 
         {/* Review Table */}
         <ReviewTable />
+        <div className="page-footer"><span>Sample reviews · Not connected to a live backend</span><span>SentimentAI</span></div>
       </div>
     </div>
   );
